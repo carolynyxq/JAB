@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8" />
+  <title>简单的飞机大战</title>
+ </head>
+ <body>
+   <div id="stage" style="width:480px;height:650px;margin:0 auto;background:#232322;">
+	 <canvas id="canvas" width="480" height="650">
+		您的浏览器不支持Canvas！
+	 </canvas>
+   </div>
+   <script>
+	var ctx=document.getElementById("canvas").getContext("2d");
+	//创建两幅图像
+	var bg1=new Image();
+	bg1.src="./IMG/background.png";//图片大写：480*852
+	var bg1Y=0;
+
+	var bg2=new Image();
+	bg2.src="./IMG/background.png";
+	var bg2Y=-852;
+	
+	var lastTime=0;//前次执行时间
+	//计时器
+	setInterval(function(){
+		var currentTime=new Date().getTime();//获取当前时间
+		//currentTime-lastTime>=20两次间隔时间大于某阈值的时候再次绘制
+		if(currentTime-lastTime>=20){
+			ctx.drawImage(bg1,0,bg1Y);
+			ctx.drawImage(bg2,0,bg2Y);
+			bg1Y++;
+			bg2Y++;
+			if(bg1Y>=852){
+				bg1Y=-852;
+			}
+			if(bg2Y>=852){
+				bg2Y=-852;
+			}
+			//更新lastTime
+			lastTime=currentTime;	
+		}	
+	},1000/100);
+	
+   </script>
+ </body>
+</html>

@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8" />
+  <title>简单的飞机大战</title>
+  <script src="./JS/common.js"></script>
+  <!--未使用继承与多态<script src="./JS/bussinessObj.js"></script>-->
+  <!--使用继承与多态-->
+  <script src="./JS/bussinessObjApro.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="./CSS/jquery-ui.css" />
+  <link type="text/css" rel="stylesheet" href="./CSS/jquery-ui.theme.css" />
+  <link type="text/css" rel="stylesheet" href="./CSS/validator.css" />
+
+  <script src="./JS/jquery-1.11.3.js"></script>
+  <!--dialog-->
+  <script src="./JS/jquery-ui.js"></script>
+  <!--表单验证-->
+  <script src="./JS/formValidator-4.0.1.js"></script>
+  <!--异步提交表单-->
+  <script src="./JS/jquery.form.js"></script>
+  <script src="./JS/GLOBAL.js"></script>
+ </head>
+ 
+ <script>
+ //用户登录
+	$(function(){
+		//注册dialog
+		$("#regist").dialog({
+			autoOpen:false,
+			draggable:true,
+			resizable:false,
+			width:'450px',
+			modal:true,
+			title:'用户注册',
+			buttons:{
+				"注册":function(){
+					//表单提交
+					$(this).ajaxSubmit({
+						//url:默认是form的action，如有则覆盖form的action
+						//type：默认是form的method，如有则覆盖
+						//beforeSubmit：提交前回调函数，false则不提交
+						data:$("#userRegist").serialize(),
+						success:function(responseText, statusText, xhr, $form){
+							// responseText就是响应数据
+							// 如果注册成功的话，显示用户登录页面
+							$("#regist").dialog('close');
+							$("#userLogin").dialog("open");
+						}
+					});
+				}
+			}
+		});
+		//登录dialog
+		$("#userLogin").dialog({
+			autoOpen:true,
+			draggable:true,
+			resizable:false,
+			width:'450px',
+			title:'用户登录',
+			modal:true,
+			buttons:[{
+				text:"登录",
+				click:function(){
+					$("#users").ajaxSubmit({
+						//url:默认是form的action，如有则覆盖form的action
+						//type：默认是form的method，如有则覆盖
+						//beforeSubmit：提交前回调函数，false则不提交
+						url:"./PHP/login.php",
+						type:"POST",
+						data:$("#users").serialize(),
+						dataType:"text",
+						success:function(responseText, statusText, xhr, $form){
+							// responseText就是响应数据
+							// 如果登录成功的话，显示登录用户信息，开始游戏
+							//console.log(responseText);
+							if(responseText=="0"){
+								$("#userLogin").dialog("close");
+							}else if(responseText=="1"){
+								alert("用户名或密码不能为空,请重新输入！");
+							}else if(responseText=="2"){
+								alert("用户名或密码错误,请重新输入！");
+							}
+						}
+					});
+				}
+			}]			
+		});
+		/***注册验证***/
+		//formValidator表单验证
+		$.formValidator.initConfig({
+			validatorGroup:"1"
+		});
+		//用户名验证
+		$("#uname").formValidator({
+			validatorGroup:"1",
+			onShow:"请输入用户名",
+			onFocus:"用户名由数字和字母组成，长度为6-18位",
+			onCorrect:'用户名输入正确',
+			tipID:"unamTip"
+		}).inputValidator({
+			min:5,
+			max:18,
+			onError:"用户名不能为空,且为6-18位"
+		}).ajaxValidator({
+			//验证用户名是否可用
+			url:"PHP/userNameCheck.php",
+			type:"POST",
+			data:$("#uname").val(),
+			onError:"当前用户名已存在",
+			dataType:'text',
+			success:function(data,textStatus){
+				//当前用户名可用
+				if(data=="error"){
+					//$("#unameCheck").html("当前用户名已存在");
+					return false;
+				}else{
+					//$("#unameCheck").html("当前用户名可用");
+					return true;
+				}
+			},
+			error:function(XMLHttpRequest,textStatus,errorThrown){
+				//给出错误提示（手动）
+				
+			}
+		}).defaultPassed();
+		//密码验证
+		$("#pwd").formValidator({
+			validatorGroup:"1",
+			onShow:"请输入密码",
+			onFocus:"密码由数字、字母和字符组成，长度为6-12位",
+			onCorrect:"密码可用",
+			tipID:"pwdTip"
+		}).inputValidator({
+			min:6,
+			max:12,
+			onError:"密码不能为空，且为6-12位"
+		});
+		//确认密码验证
+		$("#pwdagain").formValidator({
+			validatorGroup:"1",
+			onShow:"请确认密码",
+			onFocus:"重新输入密码",
+			onCorrect:"密码正确",
+			tipID:"pwdagainTip"
+		}).inputValidator({
+			min:6,
+			max:12
+		}).compareValidator({
+			desID:"pwd",
+			operateor:"=",
+			onError:"两次输入密码不一致"
+		});
+
+		/***登录验证***/
+		//formValidator表单验证
+		$.formValidator.initConfig({
+			validatorGroup:"2"
+		});
+		//用户名验证
+		$("#loginname").formValidator({
+			validatorGroup:"2",
+			onShow:"请输入用户名",
+			onFocus:"请输入用户名",
+			onCorrect:'用户名输入正确',
+			tipID:"loginunamTip"
+		}).inputValidator({
+			min:1,
+			onError:"用户名不能为空"
+		});
+		//密码验证
+		$("#loginpwd").formValidator({
+			validatorGroup:"2",
+			onShow:"请输入密码",
+			onFocus:"请输入密码",
+			onCorrect:"密码可用",
+			tipID:"loginpwdTip"
+		}).inputValidator({
+			min:1,
+			onError:"密码不能为空"
+		});
+	});
+	//点击注册连接，显示注册内容
+	function clickResist(){
+		$("#userLogin").dialog("close");
+		$("#regist").dialog('open');
+	}
+ </script>
+ <body>
+<!--用户注册-->   
+   <div id="regist">
+    <!--用于显示用户名存在的错误信息
+    <div id="unameCheck"></div>-->
+	<form id="userRegist" action="userRegist.php" method="post">
+	  <table>
+		<tr>
+			<td>用户名：</td>
+			<td>
+				<input type="text" name="uname" id="uname" />
+			</td>
+			<td>
+				<div id="unamTip"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>密码：</td>
+			<td>
+				<input type="password" name="pwd" id="pwd" />
+			</td>
+			<td>
+				<div id="pwdTip"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>确认密码：</td>
+			<td>
+				<input type="password" name="pwdagain" id="pwdagain"/>
+			</td>
+			<td>
+				<div id="pwdagainTip"></div>
+			</td>
+		</tr>
+	  </table>
+	</form>
+   </div>
+
+<!--用户登录-->
+   <div id="userLogin">
+	<form id="users" action="login.php" method="post">
+	  <table>
+		<tr>
+			<td>用户名：</td>
+			<td>
+				<input type="text" name="loginname" id="loginname" />
+			</td>
+			<td>
+				<div id="loginunamTip"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>密码：</td>
+			<td>
+				<input type="password" name="loginpwd" id="loginpwd" />
+			</td>
+			<td>
+				<div id="loginpwdTip"></div>
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td colspan="2">
+				<a href="javascript:clickResist();">注册</a>
+			</td>
+		</tr>
+	  </table>
+	</form>
+   </div>
+
+   <div id="stage" style="width:480px;height:650px;margin:0 auto;background:#232322;">
+	 <canvas id="canvas" width="480" height="650">
+		您的浏览器不支持Canvas！
+	 </canvas>
+   </div>
+
+   <script>
+	var ctx=$("#canvas").get()[0].getContext("2d");
+
+	/***声明游戏状态、当前游戏状态***/
+	var START=0;
+	var STARTING=1;
+	var RUNNING=2;
+	var PAUSE=3;
+	var GAMEOVER=4;
+	var curState=0;
+	/***得分、生命值***/
+	var SCORE=0;
+	var LIFE=3;
+	/****图片对象**/
+	var bg=createImg("./IMG/background.png");
+	var logo=createImg("./IMG/shoot_copyright.png");
+	var loading=[
+		createImg("./IMG/game_loading1.png"),
+		createImg("./IMG/game_loading2.png"),
+		createImg("./IMG/game_loading3.png"),
+		createImg("./IMG/game_loading4.png")
+	];
+	var pause=createImg("./IMG/game_pause_nor.png");
+	var hero=[
+		createImg("./IMG/hero1.png"),
+		createImg("./IMG/hero2.png"),
+		createImg("./IMG/hero_blowup_n1.png"),
+		createImg("./IMG/hero_blowup_n2.png"),
+		createImg("./IMG/hero_blowup_n3.png"),
+		createImg("./IMG/hero_blowup_n4.png")
+	];
+	var enemyMin=[
+		createImg("./IMG/enemy1.png"),
+		createImg("./IMG/enemy1_down1.png"),
+		createImg("./IMG/enemy1_down2.png"),
+		createImg("./IMG/enemy1_down3.png"),
+		createImg("./IMG/enemy1_down4.png")
+	];
+	var enemyMid=[
+		createImg("./IMG/enemy2.png"),
+		createImg("./IMG/enemy2_down1.png"),
+		createImg("./IMG/enemy2_down2.png"),
+		createImg("./IMG/enemy2_down3.png"),
+		createImg("./IMG/enemy2_down4.png")
+	];
+	var enemyMax=[
+		createImg("./IMG/enemy3_n1.png"),
+		createImg("./IMG/enemy3_n2.png"),
+		createImg("./IMG/enemy3_down1.png"),
+		createImg("./IMG/enemy3_down2.png"),
+		createImg("./IMG/enemy3_down3.png"),
+		createImg("./IMG/enemy3_down4.png"),
+		createImg("./IMG/enemy3_down5.png"),
+		createImg("./IMG/enemy3_down6.png")
+	];
+	var bullet=createImg("./IMG/bullet1.png");
+	
+	/***数据对象***/
+	/*背景*/
+	var SKY={
+		image:bg,
+		width:480,
+		height:852,
+		speed:20//绘图的间隔时间
+	};
+	/*STARTING*/
+	var LOADING={
+		framesAll:loading,
+		width:186,
+		height:38,
+		speed:200
+	};
+	/***HERO,RUNNING***/
+	var HERO={
+		framesAll:hero,
+		width:99,
+		height:124,
+		speed:20,
+		baseFrameCount:2
+	};
+	var BULLET={
+		image:bullet,
+		width:9,
+		height:21,
+		speed:30
+	};
+	/***ENEMY***/
+	var ENEMYMIN={
+		framesAll:enemyMin,
+		type:1,
+		width:57,
+		height:51,
+		baseFrameCount:1,
+		score:1,
+		life:1,
+		minSpeed:30,
+		maxSpeed:50
+	};
+	var ENEMYMID={
+		framesAll:enemyMid,
+		type:2,
+		width:69,
+		height:95,
+		baseFrameCount:1,
+		score:3,
+		life:2,
+		minSpeed:50,
+		maxSpeed:70
+	};
+	var ENEMYMAX={
+		framesAll:enemyMax,
+		type:3,
+		width:169,
+		height:258,
+		baseFrameCount:2,
+		score:5,
+		life:5,
+		speed:100
+	};
+	
+	/***业务对象实例化***/
+	var sky=new BG(SKY,ctx);
+	var heroLoading=new Loading(LOADING,ctx);
+	var hero=new Hero(HERO,ctx);
+	var enemies=[];
+	var interval=1000;//创建敌机的时间间隔
+	var lastTime=0;
+	var bullets=[];
+
+	/***独立的计时器***/
+	setInterval(function(){
+		switch(curState){
+			case 0:
+				sky.step();
+				sky.draw(ctx);
+				showLogo(ctx);
+				break;
+			case 1:
+				sky.step();
+				sky.draw(ctx);
+				heroLoading.step();
+				heroLoading.draw(ctx);
+				break;
+			case 2:
+				sky.step();
+				sky.draw(ctx);
+				//敌机
+				componentEnter();
+				componentStep();
+				componentDelete();
+				componentDraw(ctx);
+				//英雄机
+				hero.step();
+				hero.draw(ctx);
+				hero.shoot();
+				checkHit();
+				drawText(ctx);
+				break;
+			case 3:
+				sky.step();
+				sky.draw(ctx);
+				componentDraw(ctx);
+				
+				showPause(ctx);
+				hero.draw(ctx);
+
+				drawText(ctx);
+				break;
+			case 4:
+				drawOver(ctx);
+				break;
+		}
+	},1000/100);
+
+	/***START-->STARTING***/
+	$("#canvas").get()[0].onclick=function(){
+		if(curState==0){
+			curState=1;
+		}
+	};
+	/***RUNNING-->PAUSE***/
+	$("#canvas").get()[0].onmouseout=function(){
+		if(curState==2){
+			curState=3;
+		}
+	};
+	/***PAUSE-->RUNNING***/
+	$("#canvas").get()[0].onmouseover=function(){
+		if(curState==3){
+			curState=2;
+		}
+	};
+	/***RUNNING 飞机移动***/
+	$("#canvas").get()[0].onmousemove=function(evt){
+		if(curState==2){
+			hero.x=evt.offsetX-hero.width/2;
+			hero.y=evt.offsetY-hero.height/2;
+		}
+	};
+	
+   </script>
+ </body>
+</html>
