@@ -1,0 +1,10 @@
+DROP DATABASE IF EXISTS userLogin;
+CREATE DATABASE userLogin CHARSET=UTF8;
+USE userLogin;
+CREATE TABLE users(
+	id INT AUTO_INCREMENT,
+	uname VARCHAR(32),
+	PRIMARY KEY(id)
+);
+INSERT INTO users(uname) VALUES ('Admin');
+SELECT * FROM users;
